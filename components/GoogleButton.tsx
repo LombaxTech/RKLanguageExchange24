@@ -61,7 +61,8 @@ export default function GoogleButton({ onClick }: { onClick: any }) {
           </g>{" "}
         </g>{" "}
       </svg>
-      <span>Continue with Google</span>
+      {/* <span>Continue with Google</span> */}
+      <span>Sign In</span>
     </button>
   );
 }
