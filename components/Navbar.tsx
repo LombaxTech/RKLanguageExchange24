@@ -2,9 +2,11 @@ import { AuthContext } from "@/context/AuthContext";
 import { auth } from "@/firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import Link from "next/link";
-import React, { useContext } from "react";
+import React, { Fragment, useContext, useState } from "react";
 import GoogleButton from "./GoogleButton";
 import { useRouter } from "next/router";
+import { Dialog, Transition } from "@headlessui/react";
+import PostModal from "./PostModal";
 
 const provider = new GoogleAuthProvider();
 
@@ -65,9 +67,18 @@ export default function Navbar() {
           </>
         )}
         {user && (
-          <li className="cursor-pointer" onClick={signout}>
-            Sign Out
-          </li>
+          <>
+            <li>
+              <PostModal />
+            </li>
+            <li>
+              {/* <Link href={`/profile/${user.uid}`}>Profile</Link> */}
+              <Link href={`/settings`}>Settings</Link>
+            </li>
+            <li className="cursor-pointer" onClick={signout}>
+              Sign Out
+            </li>
+          </>
         )}
       </ul>
     </div>
