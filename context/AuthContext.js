@@ -16,20 +16,14 @@ export const AuthProvider = ({ children }) => {
       setUserLoading(true);
 
       if (authUser) {
-        console.log("auth user found inside onauthchanged");
-
         const userRef = doc(db, "users", authUser.uid);
 
         try {
           onSnapshot(userRef, (userSnapshot) => {
-            console.log("usersnpashop  found");
-            console.log(userSnapshot.exists());
-            console.log(userSnapshot.data());
-
             if (userSnapshot.exists()) {
               setUser({ ...authUser, ...userSnapshot.data() });
             } else {
-              setUser({ ...authUser, setup: false });
+              setUser({ ...authUser, hasNotSetUpProfile: true });
             }
 
             setUserLoading(false);
@@ -39,12 +33,6 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
           setUserLoading(false);
         }
-
-        // console.log("here is auth user");
-        // console.log(authUser);
-
-        // setUser(authUser);
-        // setUserLoading(false);
       } else {
         setUser(null);
         setUserLoading(false);

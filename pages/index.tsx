@@ -5,6 +5,7 @@ import { app, auth, db } from "@/firebase";
 import { AuthContext } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/router";
+import ProfileSetup from "@/components/ProfileSetup";
 
 export default function App() {
   const { user, userLoading } = useContext(AuthContext);
@@ -31,15 +32,19 @@ export default function App() {
     console.log(user);
   };
 
+  if (!userLoading && user && user.hasNotSetUpProfile) return <ProfileSetup />;
+
   return (
     <div className="">
       {/* <button onClick={addStuff} className="btn btn-primary">
         Click me!
       </button> */}
       {user && (
-        <div className="p-10">
-          {user.email}
-          {user.name}
+        <div className="p-10 flex flex-col gap-4">
+          <span>email: {user.email}</span>
+          <span>name: {user.name}</span>
+          <span>native lang: {user.nativeLanguage}</span>
+          <span>target lang: {user.targetLanguage}</span>
           <button onClick={show}>show</button>
         </div>
       )}
