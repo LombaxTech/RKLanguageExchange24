@@ -13,7 +13,7 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 export default function PostModal() {
   const { user } = useContext(AuthContext);
 
-  let [isOpen, setIsOpen] = useState(true);
+  let [isOpen, setIsOpen] = useState(false);
 
   const [file, setFile] = useState<any>(null);
   const fileInputRef = useRef<any>(null);
