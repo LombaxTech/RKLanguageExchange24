@@ -1,11 +1,12 @@
 import { addDoc, collection } from "firebase/firestore";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
-import { app, auth, db } from "@/firebase";
+import { app, auth, db, storage } from "@/firebase";
 import { AuthContext } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/router";
 import ProfileSetup from "@/components/ProfileSetup";
+import TargetLanguagePosts from "@/components/TargetLanguagePosts";
 
 export default function App() {
   const { user, userLoading } = useContext(AuthContext);
@@ -40,13 +41,16 @@ export default function App() {
         Click me!
       </button> */}
       {user && (
-        <div className="p-10 flex flex-col gap-4">
-          <span>email: {user.email}</span>
-          <span>name: {user.name}</span>
-          <span>native lang: {user.nativeLanguage}</span>
-          <span>target lang: {user.targetLanguage}</span>
-          <button onClick={show}>show</button>
-        </div>
+        <>
+          {/* <div className="p-10 flex flex-col gap-4">
+            <span>email: {user.email}</span>
+            <span>name: {user.name}</span>
+            <span>native lang: {user.nativeLanguage}</span>
+            <span>target lang: {user.targetLanguage}</span>
+            <button onClick={show}>show</button>
+          </div> */}
+          <TargetLanguagePosts />
+        </>
       )}
       {!user && <div>No user found</div>}
     </div>

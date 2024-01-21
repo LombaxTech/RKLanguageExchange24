@@ -1,18 +1,22 @@
 import { AuthContext } from "@/context/AuthContext";
-import { auth, db } from "@/firebase";
+import { auth, db, storage } from "@/firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import Link from "next/link";
-import React, { Fragment, useContext, useState } from "react";
+import React, { Fragment, useContext, useRef, useState } from "react";
 import GoogleButton from "./GoogleButton";
 import { useRouter } from "next/router";
 import { Dialog, Transition } from "@headlessui/react";
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import { FaFileImage } from "react-icons/fa";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export default function PostModal() {
   const { user } = useContext(AuthContext);
 
-  let [isOpen, setIsOpen] = useState(false);
+  let [isOpen, setIsOpen] = useState(true);
 
+  const [file, setFile] = useState(null);
+  const fileInputRef = useRef(null);
   const [postText, setPostText] = useState("");
 
   function closeModal() {
@@ -25,6 +29,20 @@ export default function PostModal() {
 
   const publishPost = async () => {
     try {
+      let imageUrl;
+
+      // Upload image if image
+      if (file) {
+        const fileRef = `posts/${user.uid}/${file.name}`;
+
+        const storageRef = ref(storage, fileRef);
+        await uploadBytes(storageRef, file).then((snapshot) => {
+          console.log("Uploaded a blob or file!");
+        });
+
+        imageUrl = await getDownloadURL(ref(storage, fileRef));
+      }
+
       const newPost = {
         postText,
         user: {
@@ -34,6 +52,7 @@ export default function PostModal() {
           targetLanguage: user.targetLanguage,
         },
         createdAt: new Date(),
+        ...(imageUrl && { imageUrl }),
       };
 
       await addDoc(collection(db, "posts"), newPost);
@@ -45,15 +64,20 @@ export default function PostModal() {
     }
   };
 
+  const handleIconClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (event: any) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFile(file);
+      // Perform additional actions with the file if needed
+    }
+  };
+
   return (
     <>
-      {/* <button
-          type="button"
-          onClick={openModal}
-          className="rounded-md bg-black/20 px-4 py-2 text-sm font-medium text-white hover:bg-black/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
-        >
-          Open dialog
-        </button> */}
       <span className="cursor-pointer" onClick={openModal}>
         Post
       </span>
@@ -90,15 +114,30 @@ export default function PostModal() {
                   >
                     Create A Post
                   </Dialog.Title>
-                  <div className="mt-2">
+                  <div className="mt-2 flex flex-col gap-2">
                     <textarea
                       value={postText}
                       onChange={(e) => setPostText(e.target.value)}
                       className="textarea w-full outline-none border"
                     ></textarea>
+
+                    {/* Image preview */}
+                    <div className="">
+                      {file && (
+                        <div className="relative">
+                          <img src={URL.createObjectURL(file)} width="100" />
+                          <div
+                            className="cursor-pointer"
+                            onClick={() => setFile(null)}
+                          >
+                            Delete
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="mt-4">
+                  <div className="mt-4 flex items-center justify-between">
                     <button
                       type="button"
                       className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -106,6 +145,15 @@ export default function PostModal() {
                     >
                       Post
                     </button>
+                    <div className="cursor-pointer" onClick={handleIconClick}>
+                      <FaFileImage size={25} />
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                      />
+                    </div>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
