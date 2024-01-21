@@ -16,7 +16,7 @@ export default function PostModal() {
   let [isOpen, setIsOpen] = useState(true);
 
   const [file, setFile] = useState<any>(null);
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<any>(null);
   const [postText, setPostText] = useState("");
 
   function closeModal() {
