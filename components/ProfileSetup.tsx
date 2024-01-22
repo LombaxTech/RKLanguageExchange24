@@ -1,4 +1,5 @@
 import { AuthContext } from "@/context/AuthContext";
+import { languages } from "@/data";
 import { db, storage } from "@/firebase";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
@@ -52,20 +53,37 @@ export default function ProfileSetup() {
         onChange={(e) => setName(e.target.value)}
         placeholder="name"
       />
-      <input
-        type="text"
-        className="border outline-none p-2"
-        value={nativeLanguage}
-        onChange={(e) => setNativeLanguage(e.target.value)}
-        placeholder="native language"
-      />
-      <input
-        type="text"
-        className="border outline-none p-2"
-        value={targetLanguage}
-        onChange={(e) => setTargetLanguage(e.target.value)}
-        placeholder="target language"
-      />
+
+      <div className="flex flex-col">
+        <label className="">Native Language</label>
+        <select
+          className="select w-full max-w-xs"
+          value={nativeLanguage}
+          onChange={(e) => setNativeLanguage(e.target.value)}
+        >
+          <option disabled selected>
+            Select Target Language
+          </option>
+          {languages.map((language) => (
+            <option>{language}</option>
+          ))}
+        </select>
+      </div>
+      <div className="flex flex-col">
+        <label className="">Target Language</label>
+        <select
+          className="select w-full max-w-xs"
+          value={targetLanguage}
+          onChange={(e) => setTargetLanguage(e.target.value)}
+        >
+          <option disabled selected>
+            Select Target Language
+          </option>
+          {languages.map((language) => (
+            <option>{language}</option>
+          ))}
+        </select>
+      </div>
 
       {/* <button
               className="btn btn-secondary"

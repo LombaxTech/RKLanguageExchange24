@@ -40,8 +40,6 @@ export default function TargetLanguagePosts() {
 
   return (
     <div className="p-4 flex flex-col">
-      <h1>TargetLanguagePosts</h1>
-
       {/* <button onClick={() => console.log(posts[0].createdAt.toDate())}>
         Show posts
       </button> */}
