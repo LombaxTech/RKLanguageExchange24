@@ -4,6 +4,8 @@ import { doc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import React, { useContext, useEffect, useRef, useState } from "react";
 
+import { languages } from "@/data";
+
 export default function Settings() {
   const { user, userLoading, setUser } = useContext(AuthContext);
 
@@ -136,23 +138,36 @@ export default function Settings() {
             className="p-2 border outline-none rounded-xl"
           />
         </div>
-        <div className="flex items-center gap-4">
-          <label className="">Target Language</label>
-          <input
-            type="text"
-            value={targetLanguage}
-            onChange={(e) => setTargetLanguage(e.target.value)}
-            className="p-2 border outline-none rounded-xl"
-          />
-        </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col">
           <label className="">Native Language</label>
-          <input
-            type="text"
+          <select
+            disabled
+            className="select w-full max-w-xs"
             value={nativeLanguage}
             onChange={(e) => setNativeLanguage(e.target.value)}
-            className="p-2 border outline-none rounded-xl"
-          />
+          >
+            <option disabled selected>
+              Select Target Language
+            </option>
+            {languages.map((language) => (
+              <option>{language}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col">
+          <label className="">Target Language</label>
+          <select
+            className="select w-full max-w-xs"
+            value={targetLanguage}
+            onChange={(e) => setTargetLanguage(e.target.value)}
+          >
+            <option disabled selected>
+              Select Target Language
+            </option>
+            {languages.map((language) => (
+              <option>{language}</option>
+            ))}
+          </select>
         </div>
 
         <button
