@@ -18,6 +18,7 @@ export default function Navbar() {
     try {
       await signOut(auth);
       console.log("signed out");
+      router.push("/");
     } catch (error) {
       console.log("error signing out...");
       console.log(error);
