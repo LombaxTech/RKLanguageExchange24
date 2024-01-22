@@ -1,7 +1,8 @@
 import { AuthContext } from "@/context/AuthContext";
-import { db } from "@/firebase";
-import { doc, setDoc } from "firebase/firestore";
-import React, { useContext, useState } from "react";
+import { db, storage } from "@/firebase";
+import { doc, setDoc, updateDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import React, { useContext, useRef, useState } from "react";
 
 export default function ProfileSetup() {
   const { user, setUser } = useContext(AuthContext);
@@ -9,14 +10,33 @@ export default function ProfileSetup() {
   const [name, setName] = useState("");
   const [nativeLanguage, setNativeLanguage] = useState("");
   const [targetLanguage, setTargetLanguage] = useState("");
+  const [file, setFile] = useState<any>(null);
+  const fileInputRef = useRef<any>(null);
 
   const finishProfileSetup = async () => {
+    let imageUrl;
+
+    // Upload image if image
+    if (file) {
+      const fileRef = `profilePictures/${user.uid}/${file.name}`;
+
+      const storageRef = ref(storage, fileRef);
+      await uploadBytes(storageRef, file).then((snapshot) => {
+        console.log("Uploaded a blob or file!");
+      });
+
+      imageUrl = await getDownloadURL(ref(storage, fileRef));
+    }
+
     const firestoreUser = {
       name,
       nativeLanguage,
       targetLanguage,
       email: user.email,
+      profilePictureUrl: imageUrl,
     };
+
+    setFile(null);
 
     await setDoc(doc(db, "users", user.uid), firestoreUser);
     setUser({ ...user, ...firestoreUser, hasNotSetUpProfile: false });
@@ -46,6 +66,31 @@ export default function ProfileSetup() {
         onChange={(e) => setTargetLanguage(e.target.value)}
         placeholder="target language"
       />
+
+      {/* <button
+              className="btn btn-secondary"
+              onClick={() => fileInputRef.current.click()}
+            >
+              Upload Profile Picture
+            </button> */}
+      <div className="flex flex-col my-4">
+        <label>Upload profile picture</label>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={(e: any) => setFile(e.target.files[0])}
+          // style={{ display: "none" }}
+        />
+        {file && (
+          <div className="relative">
+            <img src={URL.createObjectURL(file)} width="100" />
+            <div className="cursor-pointer" onClick={() => setFile(null)}>
+              Delete
+            </div>
+          </div>
+        )}
+      </div>
+
       <button className="btn btn-primary" onClick={finishProfileSetup}>
         Finish Profile Set Up
       </button>
