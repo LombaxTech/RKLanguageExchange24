@@ -1,7 +1,8 @@
 import { AuthContext } from "@/context/AuthContext";
-import { db } from "@/firebase";
+import { db, storage } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
-import React, { useContext, useEffect, useState } from "react";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import React, { useContext, useEffect, useRef, useState } from "react";
 
 export default function Settings() {
   const { user, userLoading, setUser } = useContext(AuthContext);
@@ -9,14 +10,20 @@ export default function Settings() {
   const [name, setName] = useState("");
   const [nativeLanguage, setNativeLanguage] = useState("");
   const [targetLanguage, setTargetLanguage] = useState("");
+  const [profilePictureUrl, setProfilePictureUrl] = useState("");
 
   const [changesExist, setChangesExist] = useState(false);
+
+  const [file, setFile] = useState<any>(null);
+  const fileInputRef = useRef<any>(null);
 
   useEffect(() => {
     if (user) {
       setName(user.name);
       setNativeLanguage(user.nativeLanguage);
       setTargetLanguage(user.targetLanguage);
+
+      if (user.profilePictureUrl) setProfilePictureUrl(user.profilePictureUrl);
     }
   }, [user]);
 
@@ -34,15 +41,41 @@ export default function Settings() {
     if (!changesExist) return;
 
     try {
-      let updatedUser = await updateDoc(doc(db, "users", user.uid), {
+      await updateDoc(doc(db, "users", user.uid), {
         name,
         targetLanguage,
       });
 
       console.log("updated");
-      console.log(updatedUser);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-      // setUser(updatedUser);
+  const updateProfilePicture = async () => {
+    try {
+      let imageUrl;
+
+      // Upload image if image
+      if (file) {
+        const fileRef = `profilePictures/${user.uid}/${file.name}`;
+
+        const storageRef = ref(storage, fileRef);
+        await uploadBytes(storageRef, file).then((snapshot) => {
+          console.log("Uploaded a blob or file!");
+        });
+
+        imageUrl = await getDownloadURL(ref(storage, fileRef));
+      }
+
+      if (imageUrl) {
+        await updateDoc(doc(db, "users", user.uid), {
+          profilePictureUrl: imageUrl,
+        });
+
+        console.log("updated profile picture");
+        setFile(null);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -53,15 +86,46 @@ export default function Settings() {
       <div className="p-4 flex flex-col gap-4 items-center ">
         <h1 className="">Profile Settings</h1>
 
-        {/* <div className="flex items-center gap-4">
-          <label className="">Profile Picture</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="p-2 border outline-none rounded-xl"
-          />
-        </div> */}
+        {/* <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" /> */}
+        {profilePictureUrl && (
+          <div className="avatar">
+            <div
+              className="w-24 rounded-full cursor-pointer"
+              onClick={() => fileInputRef.current.click()}
+            >
+              <img src={profilePictureUrl} />
+            </div>
+          </div>
+        )}
+        {!profilePictureUrl && (
+          <div className="flex gap-2">
+            <button
+              className="btn btn-secondary"
+              onClick={() => fileInputRef.current.click()}
+            >
+              Upload Profile Picture
+            </button>
+          </div>
+        )}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={(e: any) => setFile(e.target.files[0])}
+          style={{ display: "none" }}
+        />
+        {file && (
+          <div className="flex flex-col gap-4">
+            <div className="relative">
+              <img src={URL.createObjectURL(file)} width="100" />
+              <div className="cursor-pointer" onClick={() => setFile(null)}>
+                Delete
+              </div>
+            </div>
+            <button className="btn btn-primary" onClick={updateProfilePicture}>
+              Update profile picture
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center gap-4">
           <label className="">Name</label>
